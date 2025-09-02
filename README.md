@@ -73,4 +73,3 @@ npm run lint
 =======
 # Call.Crafter
 [AIConverse] is an AI-powered video call app with real-time calls, custom AI agents, and auto-generated summaries &amp; transcripts. Enjoy video playback, transcript search, and context-aware AI chat. Features secure auth, subscriptions, mobile-responsive design, and Git workflow with AI code reviews.
->>>>>>> a85ccb19d3cd49615e03afa8ba51d08a0b2c5471
