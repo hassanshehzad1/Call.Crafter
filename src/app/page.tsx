@@ -1,12 +1,55 @@
-import { Button } from '@/components/ui/button'
-import React from 'react'
+"use client"
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
+import React, { useState } from "react";
 
 const page = () => {
-  return (
-    <Button className='bg-blue-500 text-2xl hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-        Hello World
-    </Button>
-  )
-}
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-export default page
+  const onSubmit = () => {
+    authClient.signUp.email(
+      {
+        email,
+        password,
+        name,
+      },
+      {
+        onError: (error) => {
+          window.alert(`error:`);
+        },
+        onSuccess: () => {
+          window.alert("success, User created successfully");
+        },
+      }
+    );
+  };
+  return (
+    <form action="">
+      <input
+        type="text"
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <Button type="button" onClick={onSubmit}>
+        Sign Up
+      </Button>
+    </form>
+  );
+};
+
+export default page;

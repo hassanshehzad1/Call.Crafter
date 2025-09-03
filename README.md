@@ -128,3 +128,108 @@ For TypeScript types:
 npm install -D @types/<package-name>
 ```
 
+
+## User Authentication (Better Auth)
+
+This project uses [Better Auth](https://www.npmjs.com/package/better-auth) for secure, flexible authentication with email/password support and Drizzle ORM for database integration.
+
+### Server-Side Authentication Setup
+
+**File:** `src/lib/auth.ts`
+
+```typescript
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { db } from "@/db"; // your drizzle instance
+
+import * as schema from "@/db/schema"; // import all your tables to ensure they are registered
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "pg", // or "mysql", "sqlite"
+    schema: {
+      ...schema,
+    },
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
+});
+```
+
+**Explanation:**
+
+- `betterAuth`: Main function to configure authentication.
+- `drizzleAdapter`: Connects Better Auth to your Drizzle ORM database.
+- `db`: Your Drizzle database instance.
+- `schema`: Imports all your database tables (users, sessions, etc.) for registration.
+- `provider: "pg"`: Specifies PostgreSQL (Neon) as your database.
+- `emailAndPassword: { enabled: true }`: Enables email/password authentication.
+
+### Client-Side Authentication Setup
+
+**File:** `src/lib/auth-client.ts`
+
+```typescript
+import { createAuthClient } from "better-auth/react";
+export const authClient = createAuthClient({
+  baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+});
+```
+
+**Explanation:**
+
+- `createAuthClient`: Initializes the client-side authentication API.
+- `baseUrl`: Sets the API endpoint for authentication requests. Uses `BETTER_AUTH_URL` from environment variables or defaults to `http://localhost:3000`.
+
+### Example: Sign Up with Email & Password
+
+**API Route:** `POST /api/auth/sign-up/email`
+
+**Request Example:**
+
+```http
+POST /api/auth/sign-up/email
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "yourStrongPassword"
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "user": {
+    "id": "user_id",
+    "email": "user@example.com"
+  }
+}
+```
+
+### Example: Client Usage
+
+**Sign Up Form Example (React):**
+
+```tsx
+import { authClient } from "@/lib/auth-client";
+
+async function handleSignUp(email: string, password: string) {
+  const result = await authClient.signUpWithEmail({ email, password });
+  if (result.success) {
+    // User signed up successfully
+  } else {
+    // Handle error (result.error)
+  }
+}
+```
+
+### Notes
+
+- Ensure your database is migrated and `.env` contains the correct `DATABASE_URL`.
+- You can customize authentication flows using Better Auth’s API.
+- For advanced features (sessions, password reset, etc.), see [Better Auth documentation](https://www.npmjs.com/package/better-auth).
+
+---
