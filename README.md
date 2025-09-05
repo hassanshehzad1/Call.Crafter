@@ -233,3 +233,144 @@ async function handleSignUp(email: string, password: string) {
 - For advanced features (sessions, password reset, etc.), see [Better Auth documentation](https://www.npmjs.com/package/better-auth).
 
 ---
+## Authentication UI: Sign In & Sign Up
+
+This project features modern, accessible authentication forms built with React, Zod, React Hook Form, and Better Auth.
+
+---
+
+### Sign In View
+
+**File:** `src/modules/auth/ui/views/sign-in-view.tsx`
+
+#### Features
+
+- **Email & Password Authentication:** Users sign in with their email and password.
+- **Validation:** Uses Zod to ensure valid email format and password length.
+- **Error Handling:** Displays error messages for invalid credentials or server errors.
+- **Loading State:** Disables the submit button while authenticating.
+- **Social Login Buttons:** Google and GitHub buttons (integration required).
+- **Responsive Design:** Adapts to mobile and desktop screens.
+- **Terms & Privacy:** Shows links to terms and privacy policy.
+
+#### How It Works
+
+1. **Form Schema:**  
+   ```tsx
+   const formSchema = z.object({
+     email: z.string().min(2, { message: "Email is required" }).email("Not a valid email"),
+     password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+   });
+   ```
+   - Ensures the user enters a valid email and a password with at least 6 characters.
+
+2. **Form Handling:**  
+   Uses React Hook Form with Zod resolver for validation:
+   ```tsx
+   const form = useForm<z.infer<typeof formSchema>>({
+     resolver: zodResolver(formSchema),
+     defaultValues: { email: "", password: "" },
+   });
+   ```
+
+3. **Submission Logic:**  
+   Calls Better Auth’s client to sign in:
+   ```tsx
+   authClient.signIn.email(
+     { email: data.email, password: data.password },
+     {
+       onSuccess: () => { setPending(false); router.push("/"); },
+       onError: ({ error }) => { setPending(false); setError(error.message); },
+     }
+   );
+   ```
+   - On success, redirects to the home page.
+   - On error, displays the error message.
+
+4. **UI Elements:**  
+   - Email and password fields with validation messages.
+   - Error alerts using `<Alert>` if authentication fails.
+   - Social login buttons (Google, GitHub).
+   - Link to the sign-up page for new users.
+   - Terms and privacy policy links.
+
+#### Example Usage
+
+1. Enter your email and password.
+2. Click **Sign In**.
+3. If credentials are correct, you’re redirected to the home page.
+4. If not, an error message appears.
+
+---
+
+### Sign Up View
+
+**File:** `src/modules/auth/ui/views/sign-up-view.tsx`
+
+#### Features
+
+- **Fields:** Name, email, contact, password, confirm password.
+- **Validation:** Ensures all fields are filled, email is valid, passwords match, and contact is at least 10 characters.
+- **Error Handling:** Displays error messages for invalid input or server errors.
+- **Loading State:** Disables the submit button while registering.
+- **Responsive Design:** Adapts to mobile and desktop screens.
+- **Terms & Privacy:** Shows links to terms and privacy policy.
+
+#### How It Works
+
+1. **Form Schema:**  
+   ```tsx
+   const formSchema = z.object({
+     name: z.string().min(2, { message: "Name is required" }),
+     email: z.string().min(2, { message: "Email is required" }).email("Not a valid email"),
+     contact: z.string().min(10, { message: "Contact is required" }),
+     password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+     confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters." }),
+   }).refine((data) => data.password === data.confirmPassword, {
+     message: "Passwords do not match",
+     path: ["confirmPassword"],
+   });
+   ```
+   - Validates all fields and ensures passwords match.
+
+2. **Form Handling:**  
+   Uses React Hook Form with Zod resolver for validation.
+
+3. **Submission Logic:**  
+   Calls Better Auth’s client to register:
+   ```tsx
+   authClient.signIn.email(
+     { email: data.email, password: data.password },
+     {
+       onSuccess: () => { setPending(false); router.push("/"); },
+       onError: ({ error }) => { setPending(false); setError(error.message); },
+     }
+   );
+   ```
+   - On success, redirects to the home page.
+   - On error, displays the error message.
+
+4. **UI Elements:**  
+   - Name, email, contact, password, and confirm password fields.
+   - Error alerts for validation and server errors.
+   - Terms and privacy policy links.
+
+#### Example Usage
+
+1. Enter your name, email, contact, password, and confirm password.
+2. Click **Sign Up**.
+3. If registration is successful, you’re redirected to the home page.
+4. If not, an error message appears.
+
+---
+
+### UI/UX Highlights
+
+- **Accessibility:** Semantic HTML and accessible form controls.
+- **Visual Feedback:** Loading states and error alerts.
+- **Navigation:** Easy links between sign-in and sign-up views.
+- **Customizable:** Easily extend fields or validation as needed.
+
+---
+
+For further customization, see the code in `src/modules/auth/ui/views/` and update the API integration as needed.
