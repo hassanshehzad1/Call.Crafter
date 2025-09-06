@@ -374,3 +374,132 @@ This project features modern, accessible authentication forms built with React, 
 ---
 
 For further customization, see the code in `src/modules/auth/ui/views/` and update the API integration as needed.
+
+## Social Authentication (Google & GitHub)
+
+Call.Crafter supports social login using Google and GitHub, allowing users to sign in or sign up quickly and securely.
+
+---
+
+### How Social Auth Works
+
+- Users click the **Google** or **GitHub** button on the sign-in or sign-up page.
+- The app calls `authClient.signIn.social` with the selected provider.
+- The authentication flow redirects the user to the provider’s OAuth page.
+- On success, the user is redirected back and logged in.
+
+---
+
+### Example: Social Sign In
+
+**File:** `src/modules/auth/ui/views/sign-in-view.tsx`
+
+```tsx
+const onSocial = (provider: "google" | "github") => {
+  setError(null);
+  setPending(true);
+
+  authClient.signIn.social(
+    {
+      provider: provider,
+      callbackURL: "/",
+    },
+    {
+      onSuccess: () => {
+        setPending(false);
+      },
+      onError: ({ error }) => {
+        setPending(false);
+        setError(error.message);
+      },
+    }
+  );
+};
+```
+
+- **provider:** `"google"` or `"github"` depending on the button clicked.
+- **callbackURL:** Where to redirect after successful login.
+
+**UI Example:**
+
+```tsx
+<Button
+  disabled={pending}
+  onClick={() => onSocial("google")}
+  variant="outline"
+  type="button"
+  className="w-full"
+>
+  <FaGoogle />
+</Button>
+<Button
+  disabled={pending}
+  onClick={() => onSocial("github")}
+  variant="outline"
+  type="button"
+  className="w-full"
+>
+  <FaGithub />
+</Button>
+```
+
+---
+
+### Example: Social Sign Up
+
+**File:** `src/modules/auth/ui/views/sign-up-view.tsx`
+
+```tsx
+const onSocial = (provider: "google" | "github") => {
+  setError(null);
+  setPending(true);
+
+  authClient.signIn.social(
+    {
+      provider: provider,
+      callbackURL: "/",
+    },
+    {
+      onSuccess: () => {
+        setPending(false);
+      },
+      onError: ({ error }) => {
+        setPending(false);
+        setError(error.message);
+      },
+    }
+  );
+};
+```
+
+---
+
+### Configuration
+
+To enable social authentication, set up your OAuth credentials:
+
+- **Google:**  
+  - Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in your `.env` file.
+- **GitHub:**  
+  - Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in your `.env` file.
+
+Example `.env`:
+
+```
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+```
+
+---
+
+### User Experience
+
+- Users can choose to sign in or sign up with Google or GitHub.
+- If authentication fails, an error message is displayed.
+- On success, users are redirected to the home page.
+
+---
+
+For further customization, see the code

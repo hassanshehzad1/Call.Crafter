@@ -1,11 +1,18 @@
-import { Card } from "@/components/ui/card"
+import { auth } from "@/lib/auth";
 import SignUpView from "@/modules/auth/ui/views/sign-up-view";
-function page() {
-  console.log("Sign up page");
-  return (
-     <SignUpView/>
-    
-  )
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
+async function page() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!!session) {
+    return redirect("/");
+  }
+
+  return <SignUpView />;
 }
 
-export default page
+export default page;

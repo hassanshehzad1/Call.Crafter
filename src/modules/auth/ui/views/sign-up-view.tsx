@@ -3,8 +3,9 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import React from "react";
 import { z } from "zod";
+import {FaGithub, FaGoogle} from "react-icons/fa"
 import { zodResolver } from "@hookform/resolvers/zod";
-import { OctagonAlert, OctagonAlertIcon } from "lucide-react";
+import { OctagonAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import {
@@ -15,7 +16,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Signika } from "next/font/google";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input"; // Assuming Input is from shadcn/ui
 import Link from "next/link";
@@ -65,15 +65,41 @@ const signUpView = () => {
 
     // Call your sign-in API here
     // If successful, redirect or show a success message
-    authClient.signIn.email(
+    authClient.signUp.email(
       {
         email: data.email,
+        name: data.name,
+        contact: data.contact,
         password: data.password,
+        callbackURL: "/",
       },
       {
         onSuccess: (data) => {
           setPending(false);
           router.push("/");
+        },
+        onError: ({ error }) => {
+          setPending(false);
+          setError(error.message);
+        },
+      }
+    );
+  };
+  // on Social function
+  const onSocial = (provider: "google" | "github") => {
+    setError(null);
+    setPending(true);
+
+    // Call your sign-in API here
+    // If successful, redirect or show a success message
+    authClient.signIn.social(
+      {
+        provider: provider,
+        callbackURL: "/",
+      },
+      {
+        onSuccess: () => {
+          setPending(false);
         },
         onError: ({ error }) => {
           setPending(false);
@@ -135,7 +161,7 @@ const signUpView = () => {
                       </FormItem>
                     )}
                   />
-                  </div>
+                </div>
                 {/* Contact */}
                 <div className="grid gap-3">
                   <FormField
@@ -155,7 +181,27 @@ const signUpView = () => {
                       </FormItem>
                     )}
                   />
-                  </div>
+                </div>
+                {/* Password */}
+                <div className="grid gap-3">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel> Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="••••••"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 {/* Password */}
                 <div className="grid gap-3">
                   <FormField
@@ -175,40 +221,54 @@ const signUpView = () => {
                       </FormItem>
                     )}
                   />
-                  </div>
-                  {/* Button */}
-                  {!!error && (
-                    <Alert className="bg-destructive/10 border-none">
-                      <OctagonAlertIcon className="h-4 w-4 text-destructive" />
-                      <AlertTitle>{error}</AlertTitle>
-                    </Alert>
-                  )}
-                  <Button type="submit" disabled={pending} className="w-full">
-                    Sign up
+                </div>
+                {/* Button */}
+                {!!error && (
+                  <Alert className="bg-destructive/10 border-none">
+                    <OctagonAlertIcon className="h-4 w-4 text-destructive" />
+                    <AlertTitle>{error}</AlertTitle>
+                  </Alert>
+                )}
+                <Button type="submit" disabled={pending} className="w-full">
+                  Sign up
+                </Button>
+                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                  <span className="bg-background px-2 text-muted-foreground z-10 relative">
+                    Or continue with
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    disabled={pending}
+                    onClick={() => onSocial("google")}
+                    variant="outline"
+                    type="button"
+                    className="w-full"
+                  >
+                    <FaGoogle  />
+                    
                   </Button>
-                  <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                    <span className="bg-background px-2 text-muted-foreground z-10 relative">
-                      Or continue with
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" type="button" className="w-full">
-                      Google
-                    </Button>
-                    <Button variant="outline" type="button" className="w-full">
-                      GitHub
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    disabled={pending}
+                    type="button"
+                    className="w-full"
+                    onClick={() => onSocial("github")}
+                  >
+                    <FaGithub  />
+                  
+                  </Button>
+                </div>
 
-                  <div className="text-center text-sm">
-                    Already have an account?{" "}
-                    <Link
-                      href="/sign-in"
-                      className="underline underline-offset-4"
-                    >
-                      Sign In
-                    </Link>
-                  </div>
+                <div className="text-center text-sm">
+                  Already have an account?{" "}
+                  <Link
+                    href="/sign-in"
+                    className="underline underline-offset-4"
+                  >
+                    Sign In
+                  </Link>
+                </div>
               </div>
             </form>
           </Form>

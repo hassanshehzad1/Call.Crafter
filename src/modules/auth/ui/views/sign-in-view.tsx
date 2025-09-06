@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { OctagonAlert, OctagonAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import {
   Form,
@@ -46,8 +47,7 @@ const signInView = () => {
   });
 
   // on Submit function
-  const onSubmit =  (data: z.infer<typeof formSchema>) => {
-    
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     setError(null);
     setPending(true);
 
@@ -57,11 +57,37 @@ const signInView = () => {
       {
         email: data.email,
         password: data.password,
+        callbackURL: "/",
       },
       {
         onSuccess: (data) => {
           setPending(false);
+          
           router.push("/");
+        },
+        onError: ({ error }) => {
+          setPending(false);
+          setError(error.message);
+        },
+      }
+    );
+  };
+
+  // on Social function
+  const onSocial = (provider: "google" | "github") => {
+    setError(null);
+    setPending(true);
+
+    // Call your sign-in API here
+    // If successful, redirect or show a success message
+    authClient.signIn.social(
+      {
+        provider: provider,
+          callbackURL: "/",
+      },
+      {
+        onSuccess: () => {
+          setPending(false);
         },
         onError: ({ error }) => {
           setPending(false);
@@ -74,11 +100,8 @@ const signInView = () => {
     <div className="flex flex-col gap-6">
       <Card className="overflow-hidden p-0">
         <CardContent className="p-0 grid md:grid-cols-2">
-          <Form {...form} >
-            <form
-              className="p-6 md:p-8"
-              onSubmit={form.handleSubmit(onSubmit)}
-            >
+          <Form {...form}>
+            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">Welcome Back</h1>
@@ -143,11 +166,25 @@ const signInView = () => {
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" type="button" className="w-full">
-                      Google
+                    <Button
+                      disabled={pending}
+                      onClick={() => onSocial("google")}
+                      variant="outline"
+                      type="button"
+                      className="w-full"
+                    >
+                      <FaGoogle />
+                     
                     </Button>
-                    <Button variant="outline" type="button" className="w-full">
-                      GitHub
+                    <Button
+                      disabled={pending}
+                      variant="outline"
+                      type="button"
+                      className="w-full "
+                      onClick={() => onSocial("github")}
+                    >
+                      <FaGithub />
+                     
                     </Button>
                   </div>
 
