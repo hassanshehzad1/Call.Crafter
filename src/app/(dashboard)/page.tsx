@@ -1,8 +1,10 @@
-// Server Component
+// app/page.tsx
 import { auth } from "@/lib/auth";
-import HomeView from "@/modules/Home/UI/Views/home-views";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+// import Layout from "./layout"; // Adjust path if needed
+import HomeView from "@/modules/Home/UI/Views/home-views";
+import Layout from "./Layout";
 
 const page = async () => {
   const session = await auth.api.getSession({
@@ -13,7 +15,11 @@ const page = async () => {
     return redirect("/sign-in");
   }
 
-  return <HomeView />;
+  return (
+    <Layout>
+      <HomeView />
+    </Layout>
+  );
 };
 
 export default page;
