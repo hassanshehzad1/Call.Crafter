@@ -503,3 +503,77 @@ GITHUB_CLIENT_SECRET=your-github-client-secret
 ---
 
 For further customization, see the code
+## Dashboard Navbar
+
+The Dashboard Navbar provides navigation and user actions for authenticated users in the dashboard area. It is designed to be responsive and integrates with the sidebar and user profile features.
+
+---
+
+### Features
+
+- **User Profile Button:** Shows the logged-in user's avatar, name, and email. Supports logout and billing actions.
+- **Command Dialog:** Quick search for meetings or agents using a command palette.
+- **Responsive Design:** Adapts to mobile and desktop layouts.
+- **Integration:** Works with the sidebar and main dashboard layout.
+
+---
+
+### Key Components
+
+#### 1. DashboardUserButton
+
+- Displays the user's avatar (or generated initials), name, and email.
+- On mobile, uses a drawer for profile actions; on desktop, uses a dropdown menu.
+- Provides "Billing" and "Logout" actions.
+- Uses `authClient.useSession()` to get user data and `authClient.signOut()` for logout.
+
+**Example Usage:**
+
+```tsx
+import DashboardUserButton from "@/modules/Dashboard/UI/Components/dashboard-user-button";
+
+<DashboardUserButton />
+```
+
+#### 2. DashboardCommand
+
+- Renders a command dialog for quick navigation/search.
+- Includes an input field and a list of command items.
+- Controlled via `open` and `setOpen` props.
+
+**Example Usage:**
+
+```tsx
+import DashboardCommand from "@/modules/Dashboard/UI/Components/dashboard-command";
+
+<DashboardCommand open={open} setOpen={setOpen} />
+```
+
+#### 3. Layout Integration
+
+The dashboard layout wraps the sidebar, navbar, and main content:
+
+```tsx
+import DashboardSideBar from "@/modules/Dashboard/UI/Components/dashboard-sidebar";
+import DashboardNavbar from "./dashboard-navbar";
+
+<SidebarProvider>
+  <DashboardSideBar />
+  <main className="flex-1 bg-muted overflow-auto">
+    <DashboardNavbar />
+    {children}
+  </main>
+</SidebarProvider>
+```
+
+---
+
+### User Experience
+
+- Users can access their profile, billing, and logout from the navbar.
+- The command dialog enables fast navigation.
+- The navbar is always visible for quick access to dashboard features.
+
+---
+
+For further customization, see the code in `src/modules/Dashboard/UI/Components/` and update the UI or logic
