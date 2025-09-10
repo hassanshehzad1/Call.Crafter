@@ -1,40 +1,22 @@
+/**
+ * The `HomeView` component uses `useTRPC` to fetch a greeting message from the server and displays it
+ * in the UI.
+ * @returns The `HomeView` component is being returned. It uses the `useTRPC` hook to get the TRPC
+ * client instance and the `useQuery` hook from `react-query` to fetch data using the `hello` query
+ * from the TRPC client with the options `{text: "Antonio"}`. The component then displays the
+ * `greeting` data from the fetched response in a
+ */
 "use client";
-
-import { Button } from "@/components/ui/button";
-import { session } from "@/db/schema";
-import { authClient } from "@/lib/auth-client";
-import { Router } from "lucide-react";
-import { useRouter } from "next/navigation";
-import React from "react";
-
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 const HomeView = () => {
-  const { data: session } = authClient.useSession();
-  const router = useRouter();
-  if (!session) {
-    return (
-      <div>
-        <p className="text-muted-foreground ">Loading....</p>
-      </div>
-    );
-  }
+  const trpc =  useTRPC();
+  const {data} = useQuery(trpc.hello.queryOptions({text:"Antonio"}))
   return (
-    <div>
+    
+    
       <div className="flex flex-col gap-4 gap-y-4">
-        <p>Logged in as {session.user.name}</p>
-        <Button
-          onClick={() =>
-            authClient.signOut({
-              fetchOptions: {
-                onSuccess: () => {
-                  router.push("/sign-in");
-                },
-              },
-            })
-          }
-        >
-          Sign out
-        </Button>
-      </div>
+        {data?.greeting}
     </div>
   );
 };
