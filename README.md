@@ -577,3 +577,277 @@ import DashboardNavbar from "./dashboard-navbar";
 ---
 
 For further customization, see the code in `src/modules/Dashboard/UI/Components/` and update the UI or logic
+
+## tRPC Integration
+
+Call.Crafter uses [tRPC](https://trpc.io/) for typesafe, end-to-end API communication between the client and server. This enables you to call backend functions directly from your frontend code with full TypeScript support—no REST or GraphQL schemas required.
+
+---
+
+### How tRPC Works in This Project
+
+- **Routers:** Define API endpoints and business logic in `src/trpc/routers/`.
+- **Server Initialization:** The tRPC server is set up in `src/trpc/server.tsx` and exposed via Next.js API routes (see `src/app/api/trpc/[trpc]/route.ts`).
+- **Client Initialization:** The tRPC client is created in `src/trpc/client.tsx` and used throughout your React components.
+- **React Query Integration:** tRPC hooks use [TanStack Query](https://tanstack.com/query/latest) for caching, loading states, and error handling.
+
+---
+
+### Example: Defining a tRPC Router
+
+**File:** `src/trpc/routers/_app.ts`
+
+```typescript
+import { initTRPC } from '@trpc/server';
+
+const t = initTRPC.create();
+
+export const appRouter = t.router({
+  hello: t.procedure
+    .input(z.object({ text: z.string() }))
+    .query(({ input }) => {
+      return { greeting: `Hello, ${input.text}!` };
+    }),
+  // Add more procedures here...
+});
+
+export type AppRouter = typeof appRouter;
+```
+
+---
+
+### Example: Server Setup
+
+**File:** `src/trpc/server.tsx`
+
+```typescript
+import { appRouter } from './routers/_app';
+
+export const trpcServer = appRouter;
+```
+
+**File:** `src/app/api/trpc/[trpc]/route.ts`
+
+```typescript
+import { trpcServer } from '@/trpc/server';
+import { createNextApiHandler } from '@trpc/server/adapters/next';
+
+export default createNextApiHandler({
+  router: trpcServer,
+  createContext: () => ({}),
+});
+```
+
+---
+
+### Example: Client Setup
+
+**File:** `src/trpc/client.tsx`
+
+```typescript
+import { createTRPCReact } from '@trpc/react-query';
+import type { AppRouter } from './routers/_app';
+
+export const trpc = createTRPCReact<AppRouter>();
+```
+
+---
+
+### Example: Using tRPC in a React Component
+
+**File:** `src/modules/Home/UI/Views/home-views.tsx`
+
+```tsx
+"use client";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+
+const HomeView = () => {
+  const trpc = useTRPC();
+  const { data } = useQuery(trpc.hello.queryOptions({ text: "Antonio" }));
+
+  return (
+    <div className="flex flex-col gap-4 gap-y-4">
+      {data?.greeting}
+    </div>
+  );
+};
+
+export default HomeView;
+```
+
+**Explanation:**
+- `useTRPC()` gets the tRPC client instance.
+- `trpc.hello.queryOptions({ text: "Antonio" })` calls the `hello` procedure defined in your router.
+- The result (`data.greeting`) is rendered in the UI.
+
+---
+
+### Adding New Endpoints
+
+1. **Create a new procedure** in `src/trpc/routers/_app.ts`:
+   ```typescript
+   userInfo: t.procedure
+     .input(z.object({ userId: z.string() }))
+     .query(async ({ input }) => {
+       // Fetch user info from DB
+       return { name: "John Doe", id: input.userId };
+     }),
+   ```
+2. **Call it from your React component**:
+   ```tsx
+   const { data } = useQuery(trpc.userInfo.queryOptions({ userId: "123" }));
+   ```
+
+---
+
+### Benefits
+
+- **Typesafe:** End-to-end type safety between client and server.
+- **No REST/GraphQL:** Direct function calls, no manual API schemas.
+- **React Query:** Built-in caching, loading, and error states.
+- **Easy to Extend:** Add new endpoints by updating your router.
+
+---
+
+For more details, see the code in `src/trpc/` and visit the [tRPC documentation](https://trpc.io/docs)
+
+## Agents Module
+
+The Agents module in Call.Crafter allows users to manage custom AI agents. It provides backend procedures for fetching agent data and frontend views for displaying, loading, and error states.
+
+---
+
+### Database Schema
+
+Agents are stored in the `agents` table, defined in `src/db/schema.ts`:
+
+```typescript
+export const agents = pgTable("agents", {
+  id: text("id").primaryKey().$defaultFn(() => nanoid()),
+  name: text("name").notNull(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  instructions: text("instructions").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+```
+
+---
+
+### Backend: tRPC Procedure
+
+Agent-related API endpoints are defined in `src/modules/agents/server/procedure.ts`:
+
+```typescript
+import { db } from "@/db";
+import { agents } from "@/db/schema";
+import { createTRPCRouter, baseProcedure } from "@/trpc/init";
+
+export const agentsRouter = createTRPCRouter({
+  getMany: baseProcedure.query(async () => {
+    const data = await db.select().from(agents);
+    return data;
+  }),
+});
+```
+
+- **getMany:** Fetches all agents from the database.
+
+---
+
+### Frontend: Agent Views
+
+Agent data is displayed using React components in `src/app/(dashboard)/agents/ui/views/agent-view.tsx`:
+
+```tsx
+"use client";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import LoadingState from "@/components/loading-state";
+import ErrorState from "@/components/error-state";
+
+export const AgentView = () => {
+  const trpc = useTRPC();
+  const { data, isLoading, isError } = useSuspenseQuery(
+    trpc.agents.getMany.queryOptions()
+  );
+
+  return <div>{JSON.stringify(data, null, 2)}</div>;
+};
+
+// Loading state
+export const AgentViewLoading = () => (
+  <LoadingState
+    title="Fetching your Agents"
+    description="This may take a moment as we prepare the latest details for you. Sit back and relax!"
+  />
+);
+
+// Error state
+export const AgentsViewError = () => (
+  <ErrorState
+    title="Oops! Trouble Loading Your Agents 😔"
+    description="Something went wrong on our end, but don’t worry—we’re working to fix it. Please try again in a moment or contact support if the issue persists!"
+  />
+);
+```
+
+---
+
+### Page Integration
+
+The agents dashboard page integrates loading, error, and data views:
+
+```tsx
+import {
+  AgentsViewError,
+  AgentView,
+  AgentViewLoading,
+} from "./ui/views/agent-view";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { getQueryClient, trpc } from "@/trpc/server";
+import { Suspense } from "react";
+import LoadingState from "@/components/loading-state";
+import { ErrorBoundary } from "react-error-boundary";
+
+const page = () => {
+  const queryClient = getQueryClient();
+  void queryClient.prefetchQuery(trpc.agents.getMany.queryOptions());
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <Suspense fallback={<AgentViewLoading />}>
+        <ErrorBoundary fallback={<AgentsViewError />}>
+          <AgentView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrationBoundary>
+  );
+};
+
+export default page;
+```
+
+---
+
+### Example Usage
+
+- **Fetching Agents:**  
+  The frontend calls `trpc.agents.getMany.queryOptions()` to fetch all agents.
+- **Loading State:**  
+  While fetching, `AgentViewLoading` is shown.
+- **Error State:**  
+  If fetching fails, `AgentsViewError` is displayed.
+- **Display:**  
+  On success, agent data is rendered as JSON.
+
+---
+
+### Extending Agents
+
+To add more agent features (create, update, delete):
+
+1. **Add new procedures** in `procedure.ts` (e.g., `create`, `update`, `delete`).
+2. **Create corresponding frontend forms and views**.
+3. **Update the

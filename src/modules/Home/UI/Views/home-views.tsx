@@ -7,16 +7,12 @@
  * `greeting` data from the fetched response in a
  */
 "use client";
-import { useTRPC } from "@/trpc/client";
-import { useQuery } from "@tanstack/react-query";
 const HomeView = () => {
-  const trpc =  useTRPC();
-  const {data} = useQuery(trpc.hello.queryOptions({text:"Antonio"}))
   return (
     
     
-      <div className="flex flex-col gap-4 gap-y-4">
-        {data?.greeting}
+      <div >
+            Home View
     </div>
   );
 };

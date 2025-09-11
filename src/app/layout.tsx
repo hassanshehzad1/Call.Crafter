@@ -1,3 +1,4 @@
+// Global root layout
 /* This code snippet is a TypeScript React component that serves as the root layout for a Next.js
 application. Here is a breakdown of what the code is doing: */
 import type { Metadata } from "next";
