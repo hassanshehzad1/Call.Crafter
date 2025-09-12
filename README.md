@@ -851,3 +851,96 @@ To add more agent features (create, update, delete):
 1. **Add new procedures** in `procedure.ts` (e.g., `create`, `update`, `delete`).
 2. **Create corresponding frontend forms and views**.
 3. **Update the
+## Command Palette (DashboardCommand)
+
+Call.Crafter includes a Command Palette feature for quick navigation and search, inspired by modern productivity apps. This is implemented using the `cmdk` library and custom UI components.
+
+---
+
+### Features
+
+- **Keyboard-driven search:** Quickly find meetings, agents, or other dashboard items.
+- **Responsive UI:** Uses a modal dialog on desktop and a drawer on mobile devices.
+- **Customizable:** Easily add more command items or actions.
+
+---
+
+### Main Components
+
+#### 1. Command UI Library
+
+Located in `src/components/ui/command.tsx`, this library provides:
+
+- `CommandDialog` and `CommandResponsiveDialog`: Modal/drawer wrappers for the palette.
+- `CommandInput`: Search input field.
+- `CommandList`: List container for command items.
+- `CommandItem`: Individual command/action.
+- `CommandGroup`, `CommandSeparator`, `CommandShortcut`: For grouping and organizing commands.
+
+#### 2. DashboardCommand
+
+Located in `src/modules/Dashboard/UI/Components/dashboard-command.tsx`, this component renders the palette:
+
+```tsx
+import {
+  CommandResponsiveDialog,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Dispatch, SetStateAction } from "react";
+
+interface Props {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+const DashboardCommand = ({ open, setOpen }: Props) => (
+  <CommandResponsiveDialog open={open} onOpenChange={setOpen}>
+    <CommandInput placeholder="Find a meeting or agent" />
+    <CommandList>
+      <CommandItem>Test</CommandItem>
+      {/* Add more CommandItem components for actual actions */}
+    </CommandList>
+  </CommandResponsiveDialog>
+);
+
+export default DashboardCommand;
+```
+
+---
+
+### Example Usage
+
+**Basic Integration:**
+
+```tsx
+const [open, setOpen] = React.useState(false);
+
+<DashboardCommand open={open} setOpen={setOpen} />
+<button onClick={() => setOpen(true)}>Open Command Palette</button>
+```
+
+**Customizing Commands:**
+
+Add more `<CommandItem>` components inside `<CommandList>` to provide additional actions, such as navigating to meetings, agents, or other dashboard features.
+
+---
+
+### Responsive Design
+
+- On desktop: Appears as a modal dialog.
+- On mobile: Appears as a bottom drawer.
+
+This is handled automatically by the `CommandResponsiveDialog` component using the `useIsMobile` hook.
+
+---
+
+### Extending
+
+- Add filtering, keyboard shortcuts, or more advanced search logic as needed.
+- Group commands using `<CommandGroup>` and separate them with `<CommandSeparator>`.
+
+---
+
+For more details, see the code in `src/components/ui/command.tsx` and `src/modules/Dashboard/UI/Components/dashboard-command.tsx`.
