@@ -944,3 +944,196 @@ This is handled automatically by the `CommandResponsiveDialog` component using t
 ---
 
 For more details, see the code in `src/components/ui/command.tsx` and `src/modules/Dashboard/UI/Components/dashboard-command.tsx`.
+
+## Agent Form
+
+The Agent Form is used to create or update AI agents in Call.Crafter. It provides a user-friendly interface with validation, avatar generation, and feedback for success or errors.
+
+---
+
+### Features
+
+- **Create and Edit Agents:** Supports both new agent creation and editing existing agents.
+- **Validation:** Uses Zod and React Hook Form for robust input validation.
+- **Avatar Generation:** Displays a generated avatar based on the agent's name.
+- **Instructions Field:** Allows users to specify custom instructions for the agent.
+- **Feedback:** Shows loading, error, and success states using toast notifications.
+- **Cancel and Submit Buttons:** Lets users cancel or submit the form.
+
+---
+
+### Example Usage
+
+**File:** `src/modules/agents/ui/components/agent-form.tsx`
+
+```tsx
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useTRPC } from "@/trpc/client";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { agentsInsertSchema } from "../../schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { GeneratedAvatar } from "@/components/generated-avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormLabel,
+  FormMessage,
+  FormItem,
+} from "@/components/ui/form";
+import { toast } from "sonner";
+
+export const AgentForm = ({
+  onSuccess,
+  onCancel,
+  initialValues,
+}) => {
+  const trpc = useTRPC();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const createAgent = useMutation(
+    trpc.agents.create.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions());
+        if (initialValues?.id) {
+          await queryClient.invalidateQueries(
+            trpc.agents.getOne.queryOptions({ id: initialValues?.id })
+          );
+        }
+        onSuccess?.();
+      },
+      onError: (err) => {
+        toast.error(err.message);
+        // Optionally redirect if error is FORBIDDEN
+      },
+    })
+  );
+
+  const form = useForm({
+    resolver: zodResolver(agentsInsertSchema),
+    defaultValues: {
+      name: initialValues?.name ?? "",
+      instructions: initialValues?.instructions ?? "",
+    },
+  });
+
+  const isEdit = !!initialValues?.id;
+  const isPending = createAgent.isPending;
+
+  const onSubmit = (values) => {
+    if (isEdit) {
+      // TODO: Implement update logic
+      console.log("TODO: update Agent");
+    } else {
+      createAgent.mutate(values);
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <GeneratedAvatar
+          seed={form.watch("name")}
+          variant="botttsNeutral"
+          className="border size-16"
+        />
+
+        <FormField
+          name="name"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Agent" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          name="instructions"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Instructions</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Agent Instructions" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-between gap-x-2">
+          {onCancel && (
+            <Button
+              variant="ghost"
+              disabled={isPending}
+              type="button"
+              onClick={() => onCancel()}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button disabled={isPending} type="submit">
+            {isEdit ? "Update" : "Create"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+};
+```
+
+---
+
+### How It Works
+
+- **Form Validation:** Uses Zod schema (`agentsInsertSchema`) for validating agent name and instructions.
+- **Avatar:** The avatar updates live as the user types the agent's name.
+- **Submission:** On submit, calls the tRPC mutation to create or update the agent.
+- **Success:** Invalidates agent queries and calls `onSuccess` callback.
+- **Error:** Shows a toast notification if the mutation fails.
+- **Cancel:** Calls `onCancel` callback if provided.
+
+---
+
+### Integration Example
+
+To use the Agent Form in a dialog:
+
+```tsx
+import ResponsiveDialog from "@/components/responsive-dialog";
+import { AgentForm } from "@/modules/agents/ui/components/agent-form";
+
+<ResponsiveDialog
+  title="New Agent"
+  description="Create a new Agent"
+  open={isDialogOpen}
+  onOpenChange={setIsDialogOpen}
+>
+  <AgentForm
+    onSuccess={() => setIsDialogOpen(false)}
+    onCancel={() => setIsDialogOpen(false)}
+  />
+</ResponsiveDialog>
+```
+
+---
+
+### Extending
+
+- Add more fields to the schema and form as needed.
+- Implement the update logic for editing agents.
+- Customize validation and feedback messages.
+
+---
+
+For more details, see the code in `src/modules/agents/ui/components/agent-form.tsx`.

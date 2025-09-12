@@ -16,19 +16,33 @@ import { getQueryClient, trpc } from "@/trpc/server";
 import { Suspense } from "react";
 import LoadingState from "@/components/loading-state";
 import { ErrorBoundary } from "react-error-boundary";
+import AgentListHeader from "@/modules/agents/ui/components/agent-list-header";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-const page = () => {
+const page = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/sign-in");
+  }
   const queryClient = getQueryClient();
   void queryClient.prefetchQuery(trpc.agents.getMany.queryOptions());
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<AgentViewLoading />}>
-        <ErrorBoundary fallback={<AgentsViewError />}>
-          <AgentView />
-        </ErrorBoundary>
-      </Suspense>
-    </HydrationBoundary>
+    <>
+      <AgentListHeader />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Suspense fallback={<AgentViewLoading />}>
+          <ErrorBoundary fallback={<AgentsViewError />}>
+            <AgentView />
+          </ErrorBoundary>
+        </Suspense>
+      </HydrationBoundary>
+    </>
   );
 };
 
