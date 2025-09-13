@@ -1137,3 +1137,116 @@ import { AgentForm } from "@/modules/agents/ui/components/agent-form";
 ---
 
 For more details, see the code in `src/modules/agents/ui/components/agent-form.tsx`.
+## Agent Data Table
+
+The Agent Data Table displays a list of agents in a structured, interactive table format. It uses [TanStack Table](https://tanstack.com/table/v8) for flexible rendering and supports custom columns, avatars, and row actions.
+
+---
+
+### Features
+
+- **Custom Columns:** Shows agent name, instructions, and meeting count.
+- **Avatar Integration:** Displays a generated avatar for each agent.
+- **Row Clicks:** Supports row click actions for navigation or selection.
+- **Empty State:** Shows a message when there are no agents.
+- **Responsive Design:** Table adapts to different screen sizes.
+
+---
+
+### Example Usage
+
+**File:** `src/modules/agents/ui/components/data-table.tsx`
+
+```tsx
+import { DataTable } from "@/modules/agents/ui/components/data-table";
+import { columns } from "@/modules/agents/ui/components/columns";
+
+// Example data
+const agents = [
+  {
+    id: "1",
+    name: "SupportBot",
+    instructions: "Help users with support queries.",
+    MeetingCount: 5,
+  },
+  // ...more agents
+];
+
+<DataTable columns={columns} data={agents} onRowClick={(agent) => {
+  // Handle row click, e.g., navigate to agent details
+}} />
+```
+
+---
+
+### Column Definitions
+
+**File:** `src/modules/agents/ui/components/columns.tsx`
+
+```tsx
+import { GeneratedAvatar } from "@/components/generated-avatar";
+import { Badge, CornerDownRightIcon, VideoIcon } from "lucide-react";
+
+export const columns = [
+  {
+    accessorKey: "name",
+    header: "Agent Name",
+    cell: ({ row }) => (
+      <div className="flex flex-col gap-y-1">
+        <div className="flex items-center gap-x-2">
+          <GeneratedAvatar
+            variant="botttsNeutral"
+            seed={row.original.name}
+            className="size-6"
+          />
+          <span className="font-semibold capitalize">{row.original.name}</span>
+        </div>
+        <div className="flex items-center gap-x-2">
+          <CornerDownRightIcon className="size-3 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground max-w-[200px] truncate capitalize">
+            {row.original.instructions}
+          </span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "MeetingCount",
+    header: "Meetings",
+    cell: ({ row }) => (
+      <Badge
+        variant="outline"
+        className="flex items-center gap-x-2.5 [&>svg]:size-4"
+      >
+        <VideoIcon className="text-blue-700" />
+        {row.original.MeetingCount} Meetings
+      </Badge>
+    ),
+  },
+];
+```
+
+**Note:**  
+Make sure to use parentheses `()` in the `cell` render function to return JSX.
+
+---
+
+### DataTable Component
+
+**File:** `src/modules/agents/ui/components/data-table.tsx`
+
+- Uses `useReactTable` from TanStack Table.
+- Renders rows and cells using `flexRender`.
+- Handles empty state with a friendly message.
+
+---
+
+### Extending
+
+- Add more columns for additional agent properties.
+- Implement sorting, filtering, or pagination as needed.
+- Customize row click behavior for navigation or actions.
+
+---
+
+For more details, see the code in `src/modules/agents/ui/components/data-table.tsx` and `columns.tsx`.

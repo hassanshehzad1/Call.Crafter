@@ -4,13 +4,10 @@ to agents. Here's a breakdown of what the code is doing: */
 RPC) requests related to agents. Here's a breakdown of what the code is doing: */
 import { db } from "@/db";
 import { agents } from "@/db/schema";
-import {
-  createTRPCRouter,
-  
-  protectedProcedure,
-} from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { agentsInsertSchema } from "../schema";
 import { z } from "zod";
+import { getTableColumns, sql } from "drizzle-orm";
 
 export const agentsRouter = createTRPCRouter({
   //GetOne
@@ -18,7 +15,11 @@ export const agentsRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       const [existingAgent] = await db
-        .select()
+        .select({
+          // TODO: Change to actual count
+          meetingCount: sql<number>`5`,
+          ...getTableColumns(agents),
+        })
         .from(agents)
         .where(eq(agents.id, input.id));
 
