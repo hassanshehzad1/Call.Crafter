@@ -14,20 +14,31 @@ import ErrorState from "@/components/error-state";
 import { DataTable } from "@/modules/agents/ui/components/data-table";
 import { columns } from "@/modules/agents/ui/components/columns";
 import EmptyState from "@/components/emty-state";
+import useAgentFilters from "@/modules/agents/hooks/use-agent-filters";
+import AgentsDataPagination from "@/modules/agents/ui/components/agents-data-pagination";
 
 export const AgentView = () => {
+  const [filters, setFilters] = useAgentFilters();
   const trpc = useTRPC();
-  const { data, isLoading, isError } = useSuspenseQuery(
-    trpc.agents.getMany.queryOptions()
+  const { data } = useSuspenseQuery(
+    trpc.agents.getMany.queryOptions({
+      ...filters,
+    })
   );
 
   return (
     <div className="flex-1 pb-4 px-4 md:px-8 flex flex-col gap-y-4">
-      <DataTable data={data} columns={columns} />
-      {data.length === 0 && (
+      {/* {console.log(data)} */}
+      <DataTable data={data.items} columns={columns} />
+      <AgentsDataPagination
+        page={filters.page}
+        totalPages={data.totalPage}
+        onPageChange={(page) => setFilters({ page })}
+      />
+      {data.items.length === 0 && (
         <EmptyState
-        title="Create your first AI agent"
-        description="Create an agent to join our meetings. Each agent will follow your instructions and can interact with participants durning the call"
+          title="Create your first AI agent"
+          description="Create an agent to join our meetings. Each agent will follow your instructions and can interact with participants durning the call"
         />
       )}
     </div>
