@@ -1,3 +1,10 @@
+/**
+ * The function `page` checks for a user session and redirects to the sign-in page if no session is
+ * found, otherwise it renders the HomeView component.
+ * @returns The `page` function is returning the `<HomeView />` component if the user session is
+ * authenticated. If the user session is not authenticated, it will redirect the user to the "/sign-in"
+ * page.
+ */
 // app/page.tsx
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";

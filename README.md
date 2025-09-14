@@ -1250,3 +1250,138 @@ Make sure to use parentheses `()` in the `cell` render function to return JSX.
 ---
 
 For more details, see the code in `src/modules/agents/ui/components/data-table.tsx` and `columns.tsx`.
+
+
+## Agents Filters
+
+The Agents Filters feature allows users to search and paginate through their list of agents using query parameters in the URL. This is implemented using the [nuqs](https://github.com/47ng/nuqs) library for typesafe query state management.
+
+---
+
+### Features
+
+- **Search by Name:** Filter agents by their name using a search input.
+- **Pagination:** Navigate between pages of agents.
+- **URL State:** Filter and page state are synced with the URL for easy sharing and navigation.
+- **Clear Filters:** Reset all filters to their default values.
+
+---
+
+### Implementation
+
+#### 1. Custom Hook: `useAgentFilters`
+
+**File:** `src/modules/agents/hooks/use-agent-filters.tsx`
+
+```tsx
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+
+const useAgentFilters = () => {
+  return useQueryStates({
+    search: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
+    page: parseAsInteger.withDefault(1).withOptions({ clearOnDefault: true }),
+  });
+};
+
+export default useAgentFilters;
+```
+
+- `search`: A string filter for agent names.
+- `page`: An integer for pagination.
+- Both are synced with the URL query string.
+
+#### 2. Search Input Component
+
+**File:** `src/modules/agents/ui/components/agents-search-filter.tsx`
+
+```tsx
+import { SearchIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import useAgentFilters from "../../hooks/use-agent-filters";
+import { useState } from "react";
+
+const AgentsSearchFilter = () => {
+  const [filter, setFilters] = useAgentFilters();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <Input
+        placeholder="Filter by name"
+        className="h-9 bg-white w-[200px] pl-7"
+        value={filter.search}
+        onChange={(e) => setFilters({ search: e.target.value })}
+      />
+      <SearchIcon className="size-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+    </div>
+  );
+};
+
+export default AgentsSearchFilter;
+```
+
+- Updates the `search` filter in the URL as the user types.
+
+#### 3. Pagination Component
+
+**File:** `src/modules/agents/ui/components/agents-data-pagination.tsx`
+
+- Uses the `page` filter from `useAgentFilters` to control pagination.
+- Updates the URL when the page changes.
+
+#### 4. Header Integration
+
+**File:** `src/modules/agents/ui/components/agent-list-header.tsx`
+
+```tsx
+import AgentsSearchFilter from "./agents-search-filter";
+import useAgentFilters from "../../hooks/use-agent-filters";
+import { Button } from "@/components/ui/button";
+import { XCircleIcon } from "lucide-react";
+
+const AgentListHeader = () => {
+  const [filters, setFilters] = useAgentFilters();
+  const isAnyFilterModified = !!filters.search;
+
+  const onClearFilters = () => {
+    setFilters({
+      search: "",
+      page: 1,
+    });
+  };
+
+  return (
+    <div className="flex items-center gap-x-2 p-1">
+      <AgentsSearchFilter />
+      {isAnyFilterModified && (
+        <Button variant="outline" size="sm" onClick={onClearFilters}>
+          <XCircleIcon />
+          Clear
+        </Button>
+      )}
+    </div>
+  );
+};
+```
+
+- Provides a "Clear" button to reset filters.
+
+---
+
+### Example Usage
+
+- Type in the search box to filter agents by name.
+- Use pagination controls to navigate pages.
+- Click "Clear" to reset filters and show all agents.
+
+---
+
+### Benefits
+
+- **Typesafe:** Filters are parsed and validated using nuqs.
+- **URL Sync:** Filter state is reflected in the URL for easy sharing.
+- **User-Friendly:** Simple UI for searching and paging agents.
+
+---
+
+For more details, see the code in `src/modules/agents/hooks/use-agent-filters.tsx` and related UI components.

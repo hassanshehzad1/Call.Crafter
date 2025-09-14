@@ -1,3 +1,12 @@
+/**
+ * The `AgentsDataPagination` component is a pagination component in TypeScript React that displays
+ * page numbers and allows navigation between pages.
+ * @param {Props}  - The `AgentsDataPagination` component takes the following props:
+ * @returns The `AgentsDataPagination` component is being returned. It displays pagination controls for
+ * navigating between pages, showing the current page number and total number of pages. It includes
+ * "Previous" and "Next" buttons that trigger `onPageChange` function with updated page numbers when
+ * clicked.
+ */
 import { Button } from "@/components/ui/button";
 interface Props {
   page: number;

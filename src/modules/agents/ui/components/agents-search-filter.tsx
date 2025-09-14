@@ -1,8 +1,15 @@
+/**
+ * The `AgentsSearchFilter` component in TypeScript React renders a search input field with a search
+ * icon for filtering agents by name.
+ * @returns The `AgentsSearchFilter` component is being returned. It consists of an input field for
+ * filtering by name, with a placeholder text "Filter by name", and a search icon displayed on the left
+ * side of the input field. The component also utilizes the `useAgentFilters` custom hook to manage the
+ * filter state and a local state `isDialogOpen` using the `useState` hook.
+ */
 import { SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import useAgentFilters from "../../hooks/use-agent-filters";
 import { useState } from "react";
-import { filterFns } from "@tanstack/react-table";
 
 const AgentsSearchFilter = () => {
   const [filter, setFilters] = useAgentFilters();
