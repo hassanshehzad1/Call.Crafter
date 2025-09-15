@@ -1385,3 +1385,178 @@ const AgentListHeader = () => {
 ---
 
 For more details, see the code in `src/modules/agents/hooks/use-agent-filters.tsx` and related UI components.
+## Agent Page
+
+The Agent Page in Call.Crafter displays detailed information about a single agent, including its name, instructions, meeting count, and provides options to edit or delete the agent. It uses tRPC for data fetching, React Query for state management, and custom UI components for a polished user experience.
+
+---
+
+### Features
+
+- **Agent Details:** Shows agent name, avatar, instructions, and meeting count.
+- **Breadcrumb Navigation:** Easy navigation back to the agents list.
+- **Edit/Delete Actions:** Dropdown menu for editing or deleting the agent.
+- **Loading and Error States:** Friendly UI for loading and error scenarios.
+- **Typesafe Data Fetching:** Uses tRPC and React Query for robust, typesafe data access.
+
+---
+
+### Data Fetching
+
+**File:** `src/modules/agents/[agentId]/page.tsx`
+
+```tsx
+import { getQueryClient, trpc } from "@/trpc/server";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import {
+  AgentIdView,
+  AgentIdViewError,
+  AgentIdViewLoading,
+} from "../ui/components/views/agent-id-views";
+
+interface Props {
+  params: Promise<{ agentId: string }>;
+}
+
+const Page = async ({ params }: Props) => {
+  const { agentId } = await params;
+  const queryClient = getQueryClient();
+
+  void queryClient.prefetchQuery(
+    trpc.agents.getOne.queryOptions({ id: agentId })
+  );
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <Suspense fallback={<AgentIdViewLoading />}>
+        <ErrorBoundary fallback={<AgentIdViewError />}>
+          <AgentIdView agentId={agentId} />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrationBoundary>
+  );
+};
+
+export default Page;
+```
+
+---
+
+### Agent Details View
+
+**File:** `src/modules/agents/ui/components/views/agent-id-views.tsx`
+
+```tsx
+export const AgentIdView = ({ agentId }) => {
+  const trpc = useTRPC();
+  const { data } = useSuspenseQuery(
+    trpc.agents.getOne.queryOptions({ id: agentId })
+  );
+
+  return (
+    <div className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4">
+      <AgentIdViewHeader
+        agentId={agentId}
+        agentName={data.name}
+        onEdit={() => {}}
+        onRemove={() => {}}
+      />
+      <div className="bg-white rounded-lg border">
+        <div className="px-4 py-5 gap-y-5 flex flex-col col-span-5">
+          <div className="flex items-center gap-x-3">
+            <GeneratedAvatar
+              variant="botttsNeutral"
+              seed={data.name}
+              className="size-10"
+            />
+            <h2 className="text-2xl font-medium">{data.name}</h2>
+          </div>
+          <Badge
+            variant="outline"
+            className="flex items-center gap-x-2 [&>svg]:size-4"
+          >
+            <VideoIcon className="text-blue-600" />
+            {data.meetingCount}
+            {data.meetingCount === 1 ? "meeting" : "meetings"}
+          </Badge>
+          <div className="flex flex-col gap-y-4">
+            <p className="flex flex-col gap-y-4">Instructions</p>
+            <p className="text-neutral-800">{data.instructions}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+### Header and Actions
+
+**File:** `src/modules/agents/ui/components/views/agent-id-view-header.tsx`
+
+```tsx
+export const AgentIdViewHeader = ({
+  agentId,
+  agentName,
+  onEdit,
+  onRemove,
+}) => (
+  <div className="flex items-center justify-between">
+    <Breadcurmb>
+      <BreadcrumbList>
+        <BreadcrumItem>
+          <BreadcrumbLink
+            asChild
+            className="font-medium text-xl text-foreground"
+          >
+            <Link href={`/agents/${agentId}`}>{agentName}</Link>
+          </BreadcrumbLink>
+        </BreadcrumItem>
+        <BreadcrumbSeparator className="text-foreground text-xl font-medium [&>svg]:size-4">
+          <ChevronRightIcon />
+        </BreadcrumbSeparator>
+      </BreadcrumbList>
+    </Breadcurmb>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost">
+          <MoreVerticalIcon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onEdit}>
+          <PencilIcon className="size-4 text-black" />
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onRemove}>
+          <TrashIcon className="size-4 text-black" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+);
+```
+
+---
+
+### Loading and Error States
+
+- **Loading:** Shows a spinner and message while agent data is loading.
+- **Error:** Displays a friendly error message if the agent cannot be loaded.
+
+---
+
+### Example User Flow
+
+1. Navigate to `/agents/[agentId]`.
+2. The page fetches agent details and displays name, avatar, instructions, and meeting count.
+3. Use the dropdown menu to edit or delete the agent.
+4. Breadcrumb navigation allows easy return to the agents list.
+
+---
+
+For more details, see the code in `src/modules/agents/[agentId]/page.tsx` and `src/modules/agents/ui/components/views/agent-id-views.tsx`.
