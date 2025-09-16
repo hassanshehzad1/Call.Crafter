@@ -8,8 +8,8 @@
  * actions.
  */
 import {
-  Breadcurmb,
-  BreadcrumItem,
+  Breadcrumb,
+  BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
@@ -36,7 +36,6 @@ interface Props {
   agentName: string;
   onEdit: () => {};
   onRemove: () => {};
-
 }
 
 export const AgentIdViewHeader = ({
@@ -47,22 +46,22 @@ export const AgentIdViewHeader = ({
 }: Props) => {
   return (
     <div className="flex items-center justify-between">
-      <Breadcurmb>
+      <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumItem>
+          <BreadcrumbItem>
             <BreadcrumbLink
               asChild
               className="font-medium text-xl text-foreground"
             >
               <Link href={`/agents/${agentId}`}>{agentName}</Link>
             </BreadcrumbLink>
-          </BreadcrumItem>
+          </BreadcrumbItem>
 
           <BreadcrumbSeparator className="text-foreground text-xl font-medium [&>svg]:size-4">
             <ChevronRightIcon />
           </BreadcrumbSeparator>
         </BreadcrumbList>
-      </Breadcurmb>
+      </Breadcrumb>
 
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
