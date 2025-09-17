@@ -1,5 +1,6 @@
 /* This code snippet is defining an API router using TRPC (Typed RPC) library in TypeScript. Here's a
 breakdown of what each part of the code is doing: */
+import { meetingRouter } from '@/modules/meetings/server/procedure';
 import {  createTRPCRouter } from '../init';
 
 import { agentsRouter } from '@/modules/agents/server/procedure';
@@ -8,7 +9,8 @@ export const appRouter = createTRPCRouter({
   This procedure includes an input validation schema that expects an object with a `text` property
   of type string. The procedure also defines a query function that takes in options and returns an
   object with a greeting message that includes the input text provided. */
-  agents:agentsRouter
+  agents:agentsRouter,
+  meetings:meetingRouter
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;
