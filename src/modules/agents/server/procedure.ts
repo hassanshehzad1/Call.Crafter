@@ -5,7 +5,7 @@ RPC) requests related to agents. Here's a breakdown of what the code is doing: *
 import { db } from "@/db";
 import { agents } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { agentsInsertSchema } from "../schema";
+import { agentsInsertSchema, agentsUpdateSchema } from "../schema";
 import { z } from "zod";
 import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -13,7 +13,7 @@ import { TRPCError } from "@trpc/server";
 export const agentsRouter = createTRPCRouter({
   // Update
   update: protectedProcedure
-    .input(agentsInsertSchema)
+    .input(agentsUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const [updateAgent] = await db
         .update(agents)
