@@ -26,7 +26,7 @@ interface Props {
   className: string;
 }
 
-export const commandSelect = ({
+export const CommandSelect = ({
   options,
   onselect,
   onSearch,
